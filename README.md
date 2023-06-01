@@ -25,3 +25,8 @@ Below is the diagram of the model:
 
 ![image](https://github.com/NCSanto01/NLP-OpenAI/assets/78079809/50954898-e707-4f93-a8ea-693098771533)
 
+
+## Instructions
+
+***IMPORTANT:*** You need an OpenAI API key to run the model. This key must be stored in a local text file named ".env" at the root of the project under the name of an environment variable "OPENAI_API_KEY". Below is an image that shows the .env file:
+
