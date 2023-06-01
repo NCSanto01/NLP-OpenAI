@@ -23,4 +23,5 @@ The process to achieve this is as follows:
 
 Below is the diagram of the model:
 
-image.png
+![image](https://github.com/NCSanto01/NLP-OpenAI/assets/78079809/50954898-e707-4f93-a8ea-693098771533)
+
