@@ -174,7 +174,7 @@ prompt = st.text_input("Type the prompt", value=default_promtp)
 st.subheader("Generate recommendations")
 st.write("Get recommended source elements based on the input element and prompt")
 
-max_distance = st.slider("Max Distance", min_value=0.0, max_value=0.5, step=0.01)
+max_distance = st.slider("Max Distance", min_value=0.0, max_value=0.5, step=0.01, value=0.16)
 st.write("Selected Max Distance: ", max_distance)
 
 
