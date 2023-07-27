@@ -162,7 +162,8 @@ st.subheader("Define ChatGPT prompt")
 st.write("Here you must define the prompt that ChatGPT will use to generate the keywords for your input element. \
 You can use the default prompt only if the input element represents an online course.")
 
-default_promtp = "This is the information about an online course. You must generate 5 words that describe as precisely as possible the main topic of the course. You must write the 5 words in one single line."
+# default_promtp = "This is the information about an online course. You must generate 5 words that describe as precisely as possible the main topic of the course. You must write the 5 words in one single line."
+default_promtp = "This is the information about the results of an online test done by a user. You are given the title and description of the test, as well as the questions that the user has failed. You must generate 5 words that describe as precisely as possible the topics that the user has to work on in order to get a better mark on the test. You must write the 5 words in one single line."
 
 prompt = st.text_input("Type the prompt", value=default_promtp)
 
