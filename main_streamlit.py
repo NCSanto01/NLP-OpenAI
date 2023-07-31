@@ -31,6 +31,7 @@ def get_key_words(element_content, prompt):
     """
 
     text = prompt + " " + element_content
+    print("TEXT", text)
     max_tokens = 4097
 
     if len(text)> 4097*2.5:
@@ -162,10 +163,37 @@ st.subheader("Define ChatGPT prompt")
 st.write("Here you must define the prompt that ChatGPT will use to generate the keywords for your input element. \
 You can use the default prompt only if the input element represents an online course.")
 
-# default_promtp = "This is the information about an online course. You must generate 5 words that describe as precisely as possible the main topic of the course. You must write the 5 words in one single line."
-default_promtp = "This is the information about the results of an online test done by a user. You are given the title and description of the test, as well as the questions that the user has failed. You must generate 5 words that describe as precisely as possible the topics that the user has to work on in order to get a better mark on the test. You must write the 5 words in one single line."
+failed_questions = "In choosing an algorithm, what is the basis of the stability criterion?,\
+                    Which would be a possible function to normalize in R?,\
+                    Which tool displays the performance of an algorithm that is used in supervised learning?, \
+                    The main problems of supervised learning in machine learning are... (select two), \
+                    The unstructured learning model in machine learning that aims to structure data in groups according to its similarity is called..., \
+                    What is the name of each of the data available for analysis in machine learning?, \
+                    What is the purpose of Supervised Learning?, \
+                    What is TensorFlow?, \
+                    When we need to apply a model that results in a continuous variable, which is the one that tends to be used first?, \
+                    In the data preparation phase, how are missing numeric vectors usually represented?, \
+                    Select a trait of reinforcement learning."
 
-prompt = st.text_input("Type the prompt", value=default_promtp)
+system_prompt = f"""You are an NLP AI that aims to generate keywords that summarize texts. In this case, you are given the information about the results of an online test done by a user. \
+                You are given the name and description of the test, as well as the questions that the user has failed, delimited by triple backticks. failed questions: ```{failed_questions}```.\
+                You must generate 5 words that describe as precisely as possible the topics that the user has to work on in order to get a better mark on the test. \
+                It is VERY IMPORTANT that the first generated keyword describes the main topic of the test. The other keywords must be focused on the topics of the failed questions.
+                Therefore, it is VERY IMPORTANT that the 5 generated words describe exactly the concepts that were asked in the failed questions. \
+                Also, it is VERY IMPORTANT that at least one of the 5 words describes the main topic of the test, which is determined by its name and description.
+                You must write the 5 words in one single line. Here are the name and description of the test in JSON format:"""
+
+system_prompt = f"""You are an NLP AI that aims to generate keywords that summarize texts. In this case, you are given the information about the results of an online test done by a user. \
+                You are given the name and description of the test, as well as the questions that the user has failed, delimited by triple backticks. failed questions: ```{failed_questions}```.\
+                You must generate 5 words that describe as precisely as possible the topics that the user has to work on in order to get a better mark on the test. \
+                It is VERY IMPORTANT that the first generated keyword describes the main topic of the test. The other keywords must be focused on the topics of the failed questions.
+                You must write the 5 words in one single line. Here are the name and description of the test in JSON format:"""
+
+default_promtp = "This is the information about an online course. You must generate 5 words that describe as precisely as possible the main topic of the course. You must write the 5 words in one single line."
+# default_promtp = "This is the information about the results of an online test done by a user. You are given the title and description of the test, as well as the questions that the user has failed. You must generate 5 words that describe as precisely as possible the topics that the user has to work on in order to get a better mark on the test. You must write the 5 words in one single line."
+
+# system_prompt = default_promtp
+prompt = st.text_input("Type the prompt", value=system_prompt)
 
 ##############################################################################
 
