@@ -90,6 +90,13 @@ def save_input_elements(input_elements):
     except Exception as e:
         print("ERROR:", e)
 
+def save_target_elements(target_elements):
+    try:
+        with open(source_elements_file, 'wb') as handle:
+            pickle.dump(target_elements, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    except Exception as e:
+        print("ERROR:", e)
+
 def get_target_elements():
     target_elements = []
     try:
@@ -103,9 +110,10 @@ def get_target_elements():
 if 'add_to_input_elements_pressed' not in st.session_state:
     input_elements = get_input_elements()
     st.session_state.input_elements = input_elements
+if 'add_to_target_elements_pressed' not in st.session_state:
+    target_elements = get_target_elements()
+    st.session_state.target_elements = target_elements
 
-target_elements = get_target_elements()
-st.session_state.target_elements = target_elements
 ##################### PAGE ###########################
 st.header("Keywords generation using OpenAI")
 
@@ -158,6 +166,53 @@ with tab1:
         save_input_elements(st.session_state.input_elements)
         input_elements = get_input_elements()
         print(input_elements)
+
+with tab2:
+    st.session_state.target_element = {'id':"", 'name': "", 'content': ""}
+    st.subheader("Generate a target element")
+    with st.expander("Create your own target element"):
+        element_id = st.text_input("Type the id of the element", value=st.session_state.target_element['id'], key="2")
+
+        element_name = st.text_input("Type the name of the element", value=st.session_state.target_element['name'], key="3")
+        element_content = st.text_input("Type the content of the element", value=st.session_state.target_element['content'], key="4")
+
+        st.session_state.target_element['id'] = len(st.session_state.target_elements)+1
+        st.session_state.target_element['name'] = element_name
+        st.session_state.target_element['content'] = element_content
+    
+    # selected_element_type = st.selectbox("Select the element type", options=[element['name'] for element in source_elements])
+    element_type = st.text_input("What does the element represent? Example: online course, scientific article, book...",  key="5")
+
+    prompt = f"""The folowwing element in JSON format represents a {element_type}.\
+        You must generate 5 words that describe as precisely as possible the main topic of the {element_type}.\
+        You must write the 5 words in one single line."""
+    
+    if st.button("Generate keywords", key="button2"):
+        st.session_state.generate_button_pressed = True
+
+        with st.spinner("Generating keywords..."):
+             # Get input element info formated
+            target_element_info = get_element_info(st.session_state.target_element)
+
+            # Get keywords from input element
+            target_element_keywords = get_key_words(target_element_info, prompt)
+            st.session_state.target_element_keywords = target_element_keywords
+        st.write("Keywords from target element: ", target_element_keywords)
+
+    if st.button("Add to target elements",  key="button3"):
+        st.session_state.add_to_target_elements_pressed = True
+        st.session_state.target_elements.append(st.session_state.target_element)
+        df_target = pd.DataFrame(st.session_state.target_elements)
+        print(st.session_state.target_elements)
+
+
+    df_target = pd.DataFrame(st.session_state.target_elements)
+    st.table(df_target)
+
+    if st.button("Save target elements",  key="button4"):
+        save_target_elements(st.session_state.target_elements)
+        target_elements = get_target_elements()
+        print(target_elements)
 
 
     
