@@ -72,9 +72,40 @@ def get_embeddings_data(file: str):
     return data
 
 def get_element_info(element):
-    return "{'name': "+element['name']+", 'description': "+str(element['content'])+"}" 
+    return "{'name': "+element['name']+", 'description': "+str(element['content'])+"}"
 
+def get_input_elements():
+    input_elements = []
+    try:
+        with open(input_elements_file, 'rb') as handle:
+            input_elements = pickle.load(handle)
+    except:
+        print("No input file found")
+    return input_elements
 
+def save_input_elements(input_elements):
+    try:
+        with open(input_elements_file, 'wb') as handle:
+            pickle.dump(input_elements, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    except Exception as e:
+        print("ERROR:", e)
+
+def get_target_elements():
+    target_elements = []
+    try:
+        with open(source_elements_file, 'rb') as handle:
+            target_elements = pickle.load(handle)
+    except:
+        print("No source file found")
+    return target_elements  
+
+#################### LOAD CURRENT ELEMENTS ##########################
+if 'add_to_input_elements_pressed' not in st.session_state:
+    input_elements = get_input_elements()
+    st.session_state.input_elements = input_elements
+
+target_elements = get_target_elements()
+st.session_state.target_elements = target_elements
 ##################### PAGE ###########################
 st.header("Keywords generation using OpenAI")
 
@@ -82,14 +113,17 @@ st.write("First, define the input element, or choose from one of the source elem
 
 tab1, tab2 = st.tabs(["Input Element", "Target element"])
 with tab1:
-    input_element = {'name': "", 'content': ""}
+    st.session_state.input_element = {'id':"", 'name': "", 'content': ""}
     st.subheader("Generate an input element")
     with st.expander("Create your own input element"):
-        element_name = st.text_input("Type the name of the element", value=input_element['name'])
-        element_content = st.text_input("Type the content of the element", value=input_element['content'])
+        element_id = st.text_input("Type the id of the element", value=st.session_state.input_element['id'])
 
-        input_element['name'] = element_name
-        input_element['content'] = element_content
+        element_name = st.text_input("Type the name of the element", value=st.session_state.input_element['name'])
+        element_content = st.text_input("Type the content of the element", value=st.session_state.input_element['content'])
+
+        st.session_state.input_element['id'] = len(st.session_state.input_elements)+1
+        st.session_state.input_element['name'] = element_name
+        st.session_state.input_element['content'] = element_content
     
     # selected_element_type = st.selectbox("Select the element type", options=[element['name'] for element in source_elements])
     element_type = st.text_input("What does the element represent? Example: online course, scientific article, book...")
@@ -103,11 +137,27 @@ with tab1:
 
         with st.spinner("Generating keywords..."):
              # Get input element info formated
-            input_element_info = get_element_info(input_element)
+            input_element_info = get_element_info(st.session_state.input_element)
 
             # Get keywords from input element
             input_element_keywords = get_key_words(input_element_info, prompt)
             st.session_state.input_element_keywords = input_element_keywords
         st.write("Keywords from input element: ", input_element_keywords)
+
+    if st.button("Add to input elements"):
+        st.session_state.add_to_input_elements_pressed = True
+        st.session_state.input_elements.append(st.session_state.input_element)
+        df_input = pd.DataFrame(st.session_state.input_elements)
+        print(st.session_state.input_elements)
+
+
+    df_input = pd.DataFrame(st.session_state.input_elements)
+    st.table(df_input)
+
+    if st.button("Save input elements"):
+        save_input_elements(st.session_state.input_elements)
+        input_elements = get_input_elements()
+        print(input_elements)
+
 
     
