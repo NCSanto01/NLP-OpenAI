@@ -104,7 +104,35 @@ def get_target_elements():
             target_elements = pickle.load(handle)
     except:
         print("No source file found")
-    return target_elements  
+    return target_elements
+
+def get_target_keywords():
+    keywords_data = {'id': [], 'name': [], 'keywords': []}
+    try:
+        with open(source_keywords_file, 'rb') as handle:
+            keywords_data = pickle.load(handle)
+            
+    except:
+        print("No current keywords found")
+    return keywords_data
+
+def save_target_keywords(target_keywords):
+    with open(source_keywords_file, 'wb') as handle:
+            pickle.dump(target_keywords, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+def write_excel():
+    ## Writting the KEY WORDS in excel:
+        
+    with open(source_keywords_excel_file, 'rb') as handle:
+        keywords_data = pickle.load(handle)
+        
+    df = pandas.DataFrame(keywords_data)
+
+    
+    writer = pandas.ExcelWriter(source_keywords_excel_file, engine='xlsxwriter')
+    df.to_excel(writer, sheet_name = "EN")
+
+    writer.close()  
 
 #################### LOAD CURRENT ELEMENTS ##########################
 if 'add_to_input_elements_pressed' not in st.session_state:
@@ -169,6 +197,7 @@ with tab1:
 
 with tab2:
     st.session_state.target_element = {'id':"", 'name': "", 'content': ""}
+    st.session_state.current_target_keywords = get_target_keywords()
     st.subheader("Generate a target element")
     with st.expander("Create your own target element"):
         element_id = st.text_input("Type the id of the element", value=st.session_state.target_element['id'], key="2")
@@ -191,13 +220,18 @@ with tab2:
         st.session_state.generate_button_pressed = True
 
         with st.spinner("Generating keywords..."):
-             # Get input element info formated
+             # Get target element info formated
             target_element_info = get_element_info(st.session_state.target_element)
 
-            # Get keywords from input element
-            target_element_keywords = get_key_words(target_element_info, prompt)
+            # Get keywords from target element
+            keywords = get_key_words(target_element_info, prompt)
+            target_element_keywords = {
+                'id': st.session_state.target_element['id'],
+                'name': st.session_state.target_element['name'],
+                'keywords': keywords
+            }
             st.session_state.target_element_keywords = target_element_keywords
-        st.write("Keywords from target element: ", target_element_keywords)
+        st.write("Keywords from target element: ", keywords)
 
     if st.button("Add to target elements",  key="button3"):
         st.session_state.add_to_target_elements_pressed = True
@@ -213,6 +247,14 @@ with tab2:
         save_target_elements(st.session_state.target_elements)
         target_elements = get_target_elements()
         print(target_elements)
+
+    if st.button("Save keywords", key="SaveKeywords"):
+        st.session_state.current_target_keywords['id'].append(st.session_state.target_element_keywords['id'])
+        st.session_state.current_target_keywords['name'].append(st.session_state.target_element_keywords['name'])
+        st.session_state.current_target_keywords['keywords'].append(st.session_state.target_element_keywords['keywords'])
+        save_target_keywords(st.session_state.current_target_keywords)
+        write_excel()
+
 
 
     

@@ -81,6 +81,15 @@ def get_source_elements(file: str):
     
     return source_elements
 
+def get_input_elements():
+    input_elements = []
+    try:
+        with open(input_elements_file, 'rb') as handle:
+            input_elements = pickle.load(handle)
+    except:
+        print("No input file found")
+    return input_elements
+
 def get_element_info(element):
     return "{'name': "+element['name']+", 'description': "+str(element['content'])+"}" 
 
@@ -123,10 +132,12 @@ def get_recommendations(input_embedding, source_data, max_distance: float = 2.0,
 # Load source elements data
 embeddings_data = get_embeddings_data(embeddings_data_file)
 source_elements = get_source_elements(source_elements_file)
+input_elements = get_input_elements()
 
 ####################### DEFINE INPUT ELEMENT MENU ##########################
 empty_element = {'id': "", 'name': "None", 'content': "" }
 source_elements = [empty_element] + source_elements
+input_elements = [empty_element] + input_elements
 
 input_element = {'id': "100", 'name': "", 'content': "" }
 st.header("Text recommendation using OpenAI")
@@ -135,10 +146,11 @@ st.write("First, define the input element, or choose from one of the source elem
 
 st.subheader("Select input element from source elements")
 st.write("The following elements represent online courses:")
-selected_element = st.selectbox("Select an element", options=[element['name'] for element in source_elements])
+selected_element = st.selectbox("Select an element from the input elements", options=[element['name'] for element in input_elements])
+# selected_element = st.selectbox("Or select an element from the target elements", options=[element['name'] for element in source_elements])
     
 if selected_element:
-    source_selected_element = next((element for element in source_elements if element['name'] == selected_element), None)
+    source_selected_element = next((element for element in (source_elements + input_elements) if element['name'] == selected_element), None)
     input_element['name'] = source_selected_element['name']
     input_element['content'] = source_selected_element['content']
 
@@ -154,14 +166,6 @@ with st.expander("Create your own element"):
 
 st.write("Input element: ", input_element)
 
-##############################################################################
-
-############################ PROMPT MENU ###########################
-
-
-st.subheader("Define ChatGPT prompt")
-st.write("Here you must define the prompt that ChatGPT will use to generate the keywords for your input element. \
-You can use the default prompt only if the input element represents an online course.")
 
 failed_questions = "In choosing an algorithm, what is the basis of the stability criterion?,\
                     Which would be a possible function to normalize in R?,\
@@ -174,6 +178,20 @@ failed_questions = "In choosing an algorithm, what is the basis of the stability
                     When we need to apply a model that results in a continuous variable, which is the one that tends to be used first?, \
                     In the data preparation phase, how are missing numeric vectors usually represented?, \
                     Select a trait of reinforcement learning."
+
+if input_element['name'] == "Machine Learning":
+    st.write("Failed questions: ", failed_questions)
+
+##############################################################################
+
+############################ PROMPT MENU ###########################
+
+
+st.subheader("Define ChatGPT prompt")
+st.write("Here you must define the prompt that ChatGPT will use to generate the keywords for your input element. \
+You can use the default prompt only if the input element represents an online course.")
+
+
 
 system_prompt = f"""You are an NLP AI that aims to generate keywords that summarize texts. In this case, you are given the information about the results of an online test done by a user. \
                 You are given the name and description of the test, as well as the questions that the user has failed, delimited by triple backticks. failed questions: ```{failed_questions}```.\
@@ -193,7 +211,7 @@ default_promtp = "This is the information about an online course. You must gener
 # default_promtp = "This is the information about the results of an online test done by a user. You are given the title and description of the test, as well as the questions that the user has failed. You must generate 5 words that describe as precisely as possible the topics that the user has to work on in order to get a better mark on the test. You must write the 5 words in one single line."
 
 # system_prompt = default_promtp
-prompt = st.text_input("Type the prompt", value=system_prompt)
+prompt = st.text_area("Type the prompt", value=system_prompt)
 
 ##############################################################################
 
